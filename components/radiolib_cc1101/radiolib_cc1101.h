@@ -60,7 +60,7 @@ class RadiolibCC1101Component : public Component, public EH_RL_SPI {
   // datarate seems to be very crtitical to be around 5.0k sometimes, but 40k or 100k seems to make more sense
   // -- intertwined with AGC settings from smartRC below
   // see also DN022: https://www.ti.com/lit/an/swra215e/swra215e.pdf
-    int _bitrate=5;
+    float _bitrate=5;
 
     InternalGPIOPin* _gd0_rx=nullptr;
     InternalGPIOPin* _gd0_tx=nullptr;
