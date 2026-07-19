@@ -40,17 +40,12 @@ CONFIG_SCHEMA = (
 )
 
 async def to_code(config):
-
     # When using Arduino, RadioLib includes SPI.h (even though we abstract out the SPI functions)
     # so we need RadioLib to be able to find it...
     if CORE.using_arduino:
-        # This used to work ... but then deep+ got broken... https://github.com/esphome/esphome/issues/9672
-        #cg.add_library("SPI",None)        
-        #cg.add_platformio_option("lib_ldf_mode", "deep+")
-
-        # so now we do this...
-        prescript=os.path.join(os.path.dirname(__file__), "hack_radiolib_buildopt.py")
-        cg.add_platformio_option("extra_scripts", [f"pre:{prescript}"])
+        # this probably doesn't work with platformio, but platformio seems to 
+        # be being deprecated anyway for esphome builds...
+        cg.add_library("SPI",None)        
 
     cg.add_library("RadioLib",None)
 
