@@ -62,7 +62,7 @@ remote_receiver:
             char buffer[512];
             size_t bwritten=0;
 
-            bwritten+=snprintf(buffer,sizeof(buffer) - bwritten,";pulse data\n;version 1\n;timescale 1us\n;centerfreq %d Hz\n;rssi %0.1f dB\n",(uint32_t) (id(mycc1101)._freq*1e6),id(mycc1101).last_rx_rssi);
+            bwritten+=snprintf(buffer,sizeof(buffer) - bwritten,";pulse data\n;version 1\n;timescale 1us\n;centerfreq %lu Hz\n;rssi %0.1f dB\n",(uint32_t) (id(mycc1101)._freq*1e6),id(mycc1101).last_rx_rssi);
             bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,";received ");
             bwritten+=id(timesrc).now().strftime(buffer+bwritten,sizeof(buffer) - bwritten, "%Y-%m-%d %H:%M:%S");
             bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,"\n");
@@ -70,7 +70,7 @@ remote_receiver:
             int j=0;
             while (j<rawcount) {
               if (x[j]>0) {
-                bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,"%d %d\n",x[j],(j<rawcount-1) && (x[j+1]<0) ? -x[j+1] : 10000);
+                bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,"%lu %lu\n",x[j],(j<rawcount-1) && (x[j+1]<0) ? -x[j+1] : 10000);
                 ++j;
               }
               ++j;

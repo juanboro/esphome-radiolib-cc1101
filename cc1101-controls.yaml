@@ -224,7 +224,7 @@ select:
             id(cc1101_filter_length).update();
   - platform: template
     id: cc1101_ask_ook_boundary
-    name: "ASK/OOK decision boundary:"
+    name: "ASK⁄OOK decision boundary:"
     options:
       - "4 dB"
       - "8 dB (default)"
