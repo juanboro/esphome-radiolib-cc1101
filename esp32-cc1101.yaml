@@ -6,13 +6,17 @@ substitutions:
   rx:   "32"  # CC1101 pin 3
   tx:   "32"  # CC1101 pin 3
   tx_rx_shared: "true"
+  remoterecvid: "rf_receiver"
+  remotexmitid: "rf_transmitter"
+  cc1101id: "mycc1101"  
 
 external_components:
   - source: github://juanboro/esphome-radiolib-cc1101@main
     components: [ radiolib_cc1101 ]
 
 packages:
-  cc1101_controls: !include cc1101-controls.yaml
+  cc1101_controls: !include { file: cc1101-controls.yaml, vars: {cc1101id: $cc1101id , cc1101name: "CC1101"} }
+
 
 spi:
   # these are the default VSPI pins to use on ESP32
@@ -21,7 +25,7 @@ spi:
   miso_pin: $miso  # CC1101 pin 7
 
 remote_receiver:
-  - id: rf_receiver
+  - id: $remoterecvid
     idle: 10ms
     filter: 20us # Some RF sources have pretty high BW - adjust as needed
     buffer_size: 2048 # This value is pretty large... default 10k is way too large
@@ -33,10 +37,10 @@ remote_receiver:
         input: true
         pullup: $tx_rx_shared
         open_drain: false
-      id: cc1101_gd0_recv
+      id: ${cc1101id}_gd0_recv
 
 remote_transmitter:
-  - id: rf_transmitter
+  - id: $remotexmitid
     pin:
       number: $tx
       allow_other_uses: ${tx_rx_shared}
@@ -45,20 +49,20 @@ remote_transmitter:
         input: true
         pullup: true
         open_drain: true
-      id: cc1101_gd0_xmit
+      id: ${cc1101id}_gd0_xmit
 
     on_transmit:
       then:
         - lambda: |-
-            id(mycc1101).xmit();
+            id($cc1101id).xmit();
     on_complete:
       then:
         - lambda: |-
-            id(mycc1101).recv();
+            id($cc1101id).recv();
     carrier_duty_percent: 100%
 
 radiolib_cc1101:
-  id: mycc1101
+  id: $cc1101id
   cs_pin: 5 # CC1101 pin 4
 
   # optionally define rx_pin to allow monitoring rx rssi
@@ -77,4 +81,4 @@ radiolib_cc1101:
 ota:
   platform: esphome
   on_begin:
-    - lambda: id(mycc1101).standby();
+    - lambda: id($cc1101id).standby();

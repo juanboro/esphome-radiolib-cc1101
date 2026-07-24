@@ -7,12 +7,20 @@ esphome:
   name: esp32-cc1101-udp
   friendly_name: ESP32 cc1101 udp dump example
 
+  on_shutdown:
+    then:
+      # Currently is necessary to make esphome codegen tell udp component instance it is a broadcaster before setup()...
+      # removing this will cause the on_raw lambda below to crash...
+      - udp.write:
+          id: udpbc
+          data: []
+
+substitutions:
+  getfreq: "id(mycc1101_freq_num).state"
+  getlastrxrssi: "id(mycc1101_sensor_rx_rssi).state"
+  
 packages:
   esp32-cc1101: !include esp32-cc1101.yaml
-
-external_components:
-  - source: github://juanboro/esphome
-    components: [ udp_broadcast ]
 
 wifi:
   ssid: !secret wifi_name
@@ -42,7 +50,7 @@ time:
 web_server:
   port: 80
 
-udp_broadcast:
+udp:
   port: 5009
   id: udpbc
 
@@ -57,31 +65,31 @@ remote_receiver:
             int rawcount=x.size();
             if (rawcount<10) return; // ignore noise
 
-            char buffer[512];
+            char buffer[esphome::udp::MAX_PACKET_SIZE];
             size_t bwritten=0;
 
-            bwritten+=snprintf(buffer,sizeof(buffer) - bwritten,";pulse data\n;version 1\n;timescale 1us\n;centerfreq %lu Hz\n;rssi %0.1f dB\n",(uint32_t) (id(mycc1101)._freq*1e6),id(mycc1101).last_rx_rssi);
+            bwritten+=snprintf(buffer,sizeof(buffer) - bwritten,";pulse data\n;version 1\n;timescale 1us\n;centerfreq %lu Hz\n;rssi %0.1f dB\n",(uint32_t) (${getfreq}*1e6),$getlastrxrssi);
             bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,";received ");
             bwritten+=id(timesrc).now().strftime(buffer+bwritten,sizeof(buffer) - bwritten, "%Y-%m-%d %H:%M:%S");
             bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,"\n");
+            bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,";ook %u pulses\n", (int) rawcount/2);
 
             int j=0;
             while (j<rawcount) {
               if (x[j]>0) {
-                bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,"%lu %lu\n",x[j],(j<rawcount-1) && (x[j+1]<0) ? -x[j+1] : 10000);
+                bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,"%ld %ld\n",x[j],(j<rawcount-1) && (x[j+1]<0) ? -x[j+1] : 10000);
                 ++j;
               }
               ++j;
 
-              if (bwritten>490) {
-                  id(udpbc).send_data(buffer,bwritten);
+              if (bwritten>esphome::udp::MAX_PACKET_SIZE-64) {
+                  id(udpbc).send_packet((uint8_t *)buffer,bwritten);
                   bwritten=0;
               }
             }
             bwritten+=snprintf(buffer+bwritten,sizeof(buffer) - bwritten,";end\n");
-            id(udpbc).send_data(buffer,bwritten);
- 
-    # ESP-32 Remote Handling Notes
+            if (bwritten>0) id(udpbc).send_packet((uint8_t *)buffer,bwritten);
+    # (older) ESP-32 Remote Handling Notes
     # Note: These notes are specific the platform: esp-idf --- similar but different settings exist for the arudiono platform as well.
     # You REALLY probably want to use the esp-idf platform (unless you can't)
     # https://docs.espressif.com/projects/esp-idf/en/v5.4/esp32/api-reference/peripherals/rmt.html#rmt-resource-allocation
@@ -97,10 +105,6 @@ remote_receiver:
     # but should always be set to at least rmt_symbols...
     # IF you have a newer/better ESP-32 device - you can make receive_symbols as large as the buffer you need, and rmt_symbols can be smaller.
     receive_symbols: 448
-
-    # Alternativly with this pr: <url tbd> (or my branch: https://github.com/juanboro/esphome) -- use the software-interupt remote driver and tell it to allow rmt tx to manage the pin
-    #use_esp32_rmt: false
-    #esp32_share_rmt_tx: true
 
 button:
   - platform: template

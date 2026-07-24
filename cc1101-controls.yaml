@@ -1,95 +1,99 @@
+substitutions: 
+  cc1101id: "mycc1101" 
+  cc1101name: "CC1101"
+
 number:
   - platform: template
-    id: cc1101_freq_num
-    name: "CC1101 frequency"
-    lambda: return id(mycc1101)._freq;
+    id: ${cc1101id}_freq_num
+    name: "${cc1101name} frequency"
+    lambda: return id($cc1101id)._freq;
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._freq=x;
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_freq_num).update();
+            id($cc1101id)._freq=x;
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_freq_num).update();
     min_value: 300.0
     max_value: 928.0
     step: 0.01
     unit_of_measurement: MHz
   - platform: template
-    id: cc1101_bw_num
-    name: "CC1101 filter bandwidth"
-    lambda: return id(mycc1101)._bandwidth;
+    id: ${cc1101id}_bw_num
+    name: "${cc1101name} filter bandwidth"
+    lambda: return id($cc1101id)._bandwidth;
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._bandwidth=x;
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_bw_num).update();
+            id($cc1101id)._bandwidth=x;
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_bw_num).update();
     min_value: 58.0
     max_value: 818.0
     step: 10
     unit_of_measurement: kHz
   - platform: template
-    id: cc1101_br_num
-    name: "CC1101 bitrate"
-    lambda: return id(mycc1101)._bitrate;
+    id: ${cc1101id}_br_num
+    name: "${cc1101name} bitrate"
+    lambda: return id($cc1101id)._bitrate;
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._bitrate=x;
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_br_num).update();
+            id($cc1101id)._bitrate=x;
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_br_num).update();
     min_value: 0.025
     max_value: 600
     step: 0.025
     unit_of_measurement: kbps
   - platform: template
-    id: cc1101_cs_abs_thr_num
-    name: "CC1101 RSSI threshold to assert carrier sense, Thr = MAGN_TARGET + CARRIER_SENSE_ABS_TH [dB]"
-    lambda: return -((-(id(mycc1101)._REG_AGCCTRL1&3))&3);
+    id: ${cc1101id}_cs_abs_thr_num
+    name: "${cc1101name} RSSI threshold to assert carrier sense, Thr = MAGN_TARGET + CARRIER_SENSE_ABS_TH [dB]"
+    lambda: return -((-(id($cc1101id)._REG_AGCCTRL1&3))&3);
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL1=((~((int)x))+1)&3;
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl1).update();
-            id(cc1101_cs_abs_thr_num).update();
+            id($cc1101id)._REG_AGCCTRL1=((~((int)x))+1)&3;
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl1).update();
+            id(${cc1101id}_cs_abs_thr_num).update();
     min_value: -3
     max_value: 0
     step: 1
     unit_of_measurement: dB
 select:
   - platform: template
-    id: cc1101_modulation
-    name: "CC1101 modulation"
+    id: ${cc1101id}_modulation
+    name: "${cc1101name} modulation"
     options:
       - "OOK (default)"
       - "FSK"
     lambda: |-
-      return id(cc1101_modulation).at(id(mycc1101)._modulation==esphome::radiolib_cc1101::OOK_MODULATION ? 0 : 1);
+      return id(${cc1101id}_modulation).at(id($cc1101id)._modulation==esphome::radiolib_cc1101::OOK_MODULATION ? 0 : 1);
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._modulation=id(cc1101_modulation).index_of(x).value()==0 ? esphome::radiolib_cc1101::OOK_MODULATION : esphome::radiolib_cc1101::FSK_MODULATION;
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_modulation).update();
+            id($cc1101id)._modulation=id(${cc1101id}_modulation).index_of(x).value()==0 ? esphome::radiolib_cc1101::OOK_MODULATION : esphome::radiolib_cc1101::FSK_MODULATION;
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_modulation).update();
   - platform: template
-    id: cc1101_dvga_gain_reduce
-    name: "Reduce maximum available DVGA gain by:"
+    id: ${cc1101id}_dvga_gain_reduce
+    name: "${cc1101name} Reduce maximum available DVGA gain by:"
     options:
       - "no reduction (default)"
       - "disable top gain setting"
       - "disable top two gain setting"
       - "disable top three gain setting"
-    lambda: return id(cc1101_dvga_gain_reduce).at(0x3&(id(mycc1101)._REG_AGCCTRL2>>6)).value();
+    lambda: return id(${cc1101id}_dvga_gain_reduce).at(0x3&(id($cc1101id)._REG_AGCCTRL2>>6)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL2=(id(mycc1101)._REG_AGCCTRL2&0xc7)|(id(cc1101_dvga_gain_reduce).index_of(x).value()<<6);
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl2).update();
-            id(cc1101_dvga_gain_reduce).update();
+            id($cc1101id)._REG_AGCCTRL2=(id($cc1101id)._REG_AGCCTRL2&0xc7)|(id(${cc1101id}_dvga_gain_reduce).index_of(x).value()<<6);
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl2).update();
+            id(${cc1101id}_dvga_gain_reduce).update();
   - platform: template
-    id: cc1101_lna_gain_reduce
-    name: "Reduce maximum LNA gain by:"
+    id: ${cc1101id}_lna_gain_reduce
+    name: "${cc1101name} Reduce maximum LNA gain by:"
     options:
       - "0 dB (default)"
       - "2.6 dB"
@@ -99,17 +103,17 @@ select:
       - "11.5 dB"
       - "14.6 dB"
       - "17.1 dB"
-    lambda: return id(cc1101_lna_gain_reduce).at(0x7&(id(mycc1101)._REG_AGCCTRL2>>3)).value();
+    lambda: return id(${cc1101id}_lna_gain_reduce).at(0x7&(id($cc1101id)._REG_AGCCTRL2>>3)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL2=(id(mycc1101)._REG_AGCCTRL2&0xc7)|(id(cc1101_lna_gain_reduce).index_of(x).value()<<3);
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl2).update();
-            id(cc1101_lna_gain_reduce).update();
+            id($cc1101id)._REG_AGCCTRL2=(id($cc1101id)._REG_AGCCTRL2&0xc7)|(id(${cc1101id}_lna_gain_reduce).index_of(x).value()<<3);
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl2).update();
+            id(${cc1101id}_lna_gain_reduce).update();
   - platform: template
-    id: cc1101_magn_target
-    name: "Average amplitude target for filter (MAGN_TARGET):"
+    id: ${cc1101id}_magn_target
+    name: "${cc1101name} Average amplitude target for filter (MAGN_TARGET):"
     options:
       - "24 dB"
       - "27 dB"
@@ -119,150 +123,150 @@ select:
       - "38 dB"
       - "40 dB"
       - "42 dB"
-    lambda: return id(cc1101_magn_target).at(0x7&(id(mycc1101)._REG_AGCCTRL2)).value();
+    lambda: return id(${cc1101id}_magn_target).at(0x7&(id($cc1101id)._REG_AGCCTRL2)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL2=(id(mycc1101)._REG_AGCCTRL2&0xc7)|(id(cc1101_magn_target).index_of(x).value());
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl2).update();
-            id(cc1101_magn_target).update();
+            id($cc1101id)._REG_AGCCTRL2=(id($cc1101id)._REG_AGCCTRL2&0xc7)|(id(${cc1101id}_magn_target).index_of(x).value());
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl2).update();
+            id(${cc1101id}_magn_target).update();
   - platform: template
-    id: cc1101_lna_priority
-    name: "LNA priority setting:"
+    id: ${cc1101id}_lna_priority
+    name: "${cc1101name} LNA priority setting:"
     options:
       - "LNA2 first"
       - "LNA first (default)"
-    lambda: return id(cc1101_lna_priority).at(0x1&(id(mycc1101)._REG_AGCCTRL1>>6)).value();
+    lambda: return id(${cc1101id}_lna_priority).at(0x1&(id($cc1101id)._REG_AGCCTRL1>>6)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL1=(id(mycc1101)._REG_AGCCTRL1&0xbf)|(id(cc1101_lna_priority).index_of(x).value()<<6);
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl1).update();
-            id(cc1101_lna_priority).update();
+            id($cc1101id)._REG_AGCCTRL1=(id($cc1101id)._REG_AGCCTRL1&0xbf)|(id(${cc1101id}_lna_priority).index_of(x).value()<<6);
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl1).update();
+            id(${cc1101id}_lna_priority).update();
   - platform: template
-    id: cc1101_carrier_sense_rel_thr
-    name: "RSSI relative change to assert carrier sense:"
+    id: ${cc1101id}_carrier_sense_rel_thr
+    name: "${cc1101name} RSSI relative change to assert carrier sense:"
     options:
       - "disabled (default)"
       - "6 dB"
       - "10 dB"
       - "14 dB"
-    lambda: return id(cc1101_carrier_sense_rel_thr).at(0x3&(id(mycc1101)._REG_AGCCTRL1>>4)).value();
+    lambda: return id(${cc1101id}_carrier_sense_rel_thr).at(0x3&(id($cc1101id)._REG_AGCCTRL1>>4)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL2=(id(mycc1101)._REG_AGCCTRL1&0xcf)|(id(cc1101_carrier_sense_rel_thr).index_of(x).value()<<4);
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl1).update();
-            id(cc1101_carrier_sense_rel_thr).update();
+            id($cc1101id)._REG_AGCCTRL2=(id($cc1101id)._REG_AGCCTRL1&0xcf)|(id(${cc1101id}_carrier_sense_rel_thr).index_of(x).value()<<4);
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl1).update();
+            id(${cc1101id}_carrier_sense_rel_thr).update();
   # CARRIER_SENSE_ABS_THR is number template above
   - platform: template
-    id: cc1101_hyst_level
-    name: "AGC hysteresis level:"
+    id: ${cc1101id}_hyst_level
+    name: "${cc1101name} AGC hysteresis level:"
     options:
       - "none"
       - "low"
       - "medium (default)"
       - "high"
-    lambda: return id(cc1101_hyst_level).at(0x3&(id(mycc1101)._REG_AGCCTRL0>>6)).value();
+    lambda: return id(${cc1101id}_hyst_level).at(0x3&(id($cc1101id)._REG_AGCCTRL0>>6)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL0=(id(mycc1101)._REG_AGCCTRL0&0x3f)|(id(cc1101_hyst_level).index_of(x).value()<<6);
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl0).update();
-            id(cc1101_hyst_level).update();
+            id($cc1101id)._REG_AGCCTRL0=(id($cc1101id)._REG_AGCCTRL0&0x3f)|(id(${cc1101id}_hyst_level).index_of(x).value()<<6);
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl0).update();
+            id(${cc1101id}_hyst_level).update();
   - platform: template
-    id: cc1101_wait_time
-    name: "AGC wait time:"
+    id: ${cc1101id}_wait_time
+    name: "${cc1101name} AGC wait time:"
     options:
       - "8 samples"
       - "16 samples (default)"
       - "24 samples"
       - "32 samples"
-    lambda: return id(cc1101_wait_time).at(0x3&(id(mycc1101)._REG_AGCCTRL0>>4)).value();
+    lambda: return id(${cc1101id}_wait_time).at(0x3&(id($cc1101id)._REG_AGCCTRL0>>4)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL0=(id(mycc1101)._REG_AGCCTRL0&0xcf)|(id(cc1101_wait_time).index_of(x).value()<<4);
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl0).update();
-            id(cc1101_wait_time).update();
+            id($cc1101id)._REG_AGCCTRL0=(id($cc1101id)._REG_AGCCTRL0&0xcf)|(id(${cc1101id}_wait_time).index_of(x).value()<<4);
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl0).update();
+            id(${cc1101id}_wait_time).update();
   - platform: template
-    id: cc1101_agc_freeze
-    name: "Freeze AGC gain:"
+    id: ${cc1101id}_agc_freeze
+    name: "${cc1101name} Freeze AGC gain:"
     options:
       - "never (default)"
       - "when sync word is found"
       - "manually freeze analog control"
       - "manually freeze analog and digital control"
-    lambda: return id(cc1101_agc_freeze).at(0x3&(id(mycc1101)._REG_AGCCTRL0>>2)).value();
+    lambda: return id(${cc1101id}_agc_freeze).at(0x3&(id($cc1101id)._REG_AGCCTRL0>>2)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL0=(id(mycc1101)._REG_AGCCTRL0&0xf3)|(id(cc1101_agc_freeze).index_of(x).value()<<2);
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl0).update();
-            id(cc1101_agc_freeze).update();
+            id($cc1101id)._REG_AGCCTRL0=(id($cc1101id)._REG_AGCCTRL0&0xf3)|(id(${cc1101id}_agc_freeze).index_of(x).value()<<2);
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl0).update();
+            id(${cc1101id}_agc_freeze).update();
   - platform: template
-    id: cc1101_filter_length
-    name: "Averaging length for channel filter:"
+    id: ${cc1101id}_filter_length
+    name: "${cc1101name} Averaging length for channel filter:"
     options:
       - "8 samples"
       - "16 samples (default)"
       - "32 samples"
       - "64 samples"
-    lambda: return id(cc1101_filter_length).at(0x3&(id(mycc1101)._REG_AGCCTRL0)).value();
+    lambda: return id(${cc1101id}_filter_length).at(0x3&(id($cc1101id)._REG_AGCCTRL0)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL0=(id(mycc1101)._REG_AGCCTRL0&0xfc)|(id(cc1101_filter_length).index_of(x).value());
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl0).update();
-            id(cc1101_filter_length).update();
+            id($cc1101id)._REG_AGCCTRL0=(id($cc1101id)._REG_AGCCTRL0&0xfc)|(id(${cc1101id}_filter_length).index_of(x).value());
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl0).update();
+            id(${cc1101id}_filter_length).update();
   - platform: template
-    id: cc1101_ask_ook_boundary
-    name: "ASK⁄OOK decision boundary:"
+    id: ${cc1101id}_ask_ook_boundary
+    name: "${cc1101name} ASK⁄OOK decision boundary:"
     options:
       - "4 dB"
       - "8 dB (default)"
       - "12 dB"
       - "16 dB"
-    lambda: return id(cc1101_ask_ook_boundary).at(0x3&(id(mycc1101)._REG_AGCCTRL0)).value();
+    lambda: return id(${cc1101id}_ask_ook_boundary).at(0x3&(id($cc1101id)._REG_AGCCTRL0)).value();
     set_action: 
       then:
         - lambda: |-
-            id(mycc1101)._REG_AGCCTRL0=(id(mycc1101)._REG_AGCCTRL0&0xfc)|(id(cc1101_ask_ook_boundary).index_of(x).value());
-            id(mycc1101).setup_direct_mode();
-            id(cc1101_sensor_reg_agcctrl0).update();
-            id(cc1101_ask_ook_boundary).update();
+            id($cc1101id)._REG_AGCCTRL0=(id($cc1101id)._REG_AGCCTRL0&0xfc)|(id(${cc1101id}_ask_ook_boundary).index_of(x).value());
+            id($cc1101id).setup_direct_mode();
+            id(${cc1101id}_sensor_reg_agcctrl0).update();
+            id(${cc1101id}_ask_ook_boundary).update();
 
 sensor:
   - platform: template
-    id: cc1101_sensor_rssi
-    name: "CC1101 RSSI"
-    lambda: return id(mycc1101).getRSSI();
+    id: ${cc1101id}_sensor_rssi
+    name: "${cc1101name} RSSI"
+    lambda: return id($cc1101id).getRSSI();
     update_interval: 10s
     unit_of_measurement: dB
   - platform: template
-    id: cc1101_sensor_rx_rssi
-    name: "CC1101 Last RX RSSI"
-    lambda: return id(mycc1101).last_rx_rssi;
+    id: ${cc1101id}_sensor_rx_rssi
+    name: "${cc1101name} Last RX RSSI"
+    lambda: return id($cc1101id).last_rx_rssi;
     update_interval: 10s
     unit_of_measurement: dB
 
 text_sensor:
   - platform: template
-    id: cc1101_sensor_reg_agcctrl2
-    name: "CC1101 _REG_AGCCTRL2"
-    lambda: return str_sprintf("0x%x",id(mycc1101)._REG_AGCCTRL2);
+    id: ${cc1101id}_sensor_reg_agcctrl2
+    name: "${cc1101name} _REG_AGCCTRL2"
+    lambda: return str_sprintf("0x%x",id($cc1101id)._REG_AGCCTRL2);
   - platform: template
-    id: cc1101_sensor_reg_agcctrl1
-    name: "CC1101 _REG_AGCCTRL1"
-    lambda: return str_sprintf("0x%x",id(mycc1101)._REG_AGCCTRL1);
+    id: ${cc1101id}_sensor_reg_agcctrl1
+    name: "${cc1101name} _REG_AGCCTRL1"
+    lambda: return str_sprintf("0x%x",id($cc1101id)._REG_AGCCTRL1);
   - platform: template
-    id: cc1101_sensor_reg_agcctrl0
-    name: "CC1101 _REG_AGCCTRL0"
-    lambda: return str_sprintf("0x%x",id(mycc1101)._REG_AGCCTRL0);
+    id: ${cc1101id}_sensor_reg_agcctrl0
+    name: "${cc1101name} _REG_AGCCTRL0"
+    lambda: return str_sprintf("0x%x",id($cc1101id)._REG_AGCCTRL0);
